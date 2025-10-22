@@ -13,8 +13,7 @@ set(SRC_FILES
     src/utils.cpp
 )
 
-add_executable(EventSystem)
-target_sources(EventSystem PRIVATE ${SRC_FILES})
+add_executable(EventSystem ${SRC_FILES})
 
 add_library(sqlite3 STATIC "${CMAKE_CURRENT_SOURCE_DIR}/SQLite/sqlite3.c")
 set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/SQLite/sqlite3.c" PROPERTIES LANGUAGE C)
@@ -23,6 +22,7 @@ target_include_directories(EventSystem PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/headers
     ${CMAKE_CURRENT_SOURCE_DIR}/SQLite
 )
+
 target_include_directories(sqlite3 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/SQLite)
 
 target_link_libraries(EventSystem PRIVATE sqlite3)
@@ -39,14 +39,17 @@ endif()
 if(MSVC)
     target_compile_options(EventSystem PRIVATE /W4 /permissive-)
     set_target_properties(EventSystem PROPERTIES
-        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>"
+        MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
+    )
+    set_target_properties(sqlite3 PROPERTIES
+        MSVC_RUNTIME_LIBRARY "$<$<CONFIG:Debug>:MultiThreadedDebugDLL>$<$<CONFIG:Release>:MultiThreadedDLL>"
     )
 else()
     target_compile_options(EventSystem PRIVATE -Wall -Wextra -Wpedantic)
 endif()
 
+set_target_properties(EventSystem PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+set_target_properties(sqlite3 PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED ON)
+
 set_target_properties(EventSystem PROPERTIES POSITION_INDEPENDENT_CODE ON)
 set_target_properties(sqlite3 PROPERTIES POSITION_INDEPENDENT_CODE ON)
-
-set_target_properties(EventSystem PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
-set_target_properties(sqlite3 PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
